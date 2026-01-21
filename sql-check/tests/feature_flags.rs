@@ -4,7 +4,7 @@
 #[test]
 fn test_check_feature_enabled_returns_string() {
     use sql_check::check;
-    
+
     let sql = check!("SELECT 1");
     assert_eq!(sql, "SELECT 1");
 }
@@ -27,7 +27,7 @@ fn test_check_validates_multiple_select_statements() {
 #[test]
 fn test_check_feature_disabled_returns_string() {
     use sql_check::check;
-    
+
     let sql = check!("SELECT 1");
     assert_eq!(sql, "SELECT 1");
 }
@@ -36,7 +36,7 @@ fn test_check_feature_disabled_returns_string() {
 #[test]
 fn test_check_feature_disabled_no_validation() {
     use sql_check::check;
-    
+
     // When check feature is disabled, even invalid SQL should compile
     // (no database connection attempted)
     let sql = check!("INVALID SQL SYNTAX");

@@ -36,19 +36,13 @@ fn main() {
     );
     println!("✓ Valid CREATE TABLE query validated");
 
-    let insert_query = check!(
-        "INSERT INTO users (name, email) VALUES (?, ?)"
-    );
+    let insert_query = check!("INSERT INTO users (name, email) VALUES (?, ?)");
     println!("✓ Valid INSERT query: {}", insert_query);
 
-    let update_query = check!(
-        "UPDATE users SET name = ? WHERE id = ?"
-    );
+    let update_query = check!("UPDATE users SET name = ? WHERE id = ?");
     println!("✓ Valid UPDATE query: {}", update_query);
 
-    let delete_query = check!(
-        "DELETE FROM users WHERE id = ?"
-    );
+    let delete_query = check!("DELETE FROM users WHERE id = ?");
     println!("✓ Valid DELETE query: {}", delete_query);
 
     println!("\n✅ All SQL queries validated successfully at compile time!");
