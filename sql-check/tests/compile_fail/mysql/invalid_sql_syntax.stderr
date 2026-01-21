@@ -1,0 +1,5 @@
+error: SQL validation failed: $ERROR
+ --> tests/compile_fail/mysql/invalid_sql_syntax.rs:4:16
+  |
+4 |     let _sql = check!("SELEC * FROM");
+  |                ^^^^^^^^^^^^^^^^^^^^^^

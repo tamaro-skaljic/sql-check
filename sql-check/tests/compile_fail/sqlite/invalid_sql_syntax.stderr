@@ -1,0 +1,7 @@
+error: SQL validation failed: error returned from database: (code: 1) near "SELEC": syntax error
+ --> tests/compile_fail/sqlite/invalid_sql_syntax.rs:4:16
+  |
+4 |     let _sql = check!("SELEC * FROM");
+  |                ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `$crate::check_impl` which comes from the expansion of the macro `check` (in Nightly builds, run with -Z macro-backtrace for more info)

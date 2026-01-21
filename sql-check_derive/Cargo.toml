@@ -1,0 +1,72 @@
+[package]
+name = "sql-check_derive"
+description = "Procedural macro for SQL Check. Do not use directly, use sql-check crate instead."
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "../README.md"
+
+[lib]
+proc-macro = true
+
+[features]
+default = []
+
+# for conditional compilation
+_rt-async-global-executor = [
+    "async-global-executor",
+    "sqlx-core/_rt-async-global-executor",
+]
+_rt-async-std = ["async-std", "sqlx-core/_rt-async-std"]
+_rt-smol = ["smol", "sqlx-core/_rt-smol"]
+_rt-tokio = ["tokio", "sqlx-core/_rt-tokio"]
+
+_tls-native-tls = ["sqlx-core/_tls-native-tls"]
+_tls-rustls-aws-lc-rs = ["sqlx-core/_tls-rustls-aws-lc-rs"]
+_tls-rustls-ring-webpki = ["sqlx-core/_tls-rustls-ring-webpki"]
+_tls-rustls-ring-native-roots = ["sqlx-core/_tls-rustls-ring-native-roots"]
+
+# database
+mysql = ["sqlx-mysql"]
+postgres = ["sqlx-postgres"]
+sqlite = ["sqlx-sqlite"]
+
+[dependencies]
+sqlx-core = { workspace = true, features = ["any", "offline"] }
+
+# Database drivers (all optional)
+sqlx-mysql = { workspace = true, optional = true, features = [
+    "offline",
+    "migrate",
+] }
+sqlx-postgres = { workspace = true, optional = true, features = [
+    "offline",
+    "migrate",
+] }
+sqlx-sqlite = { workspace = true, optional = true, features = [
+    "offline",
+    "migrate",
+] }
+
+# Async runtimes (all optional)
+async-global-executor = { workspace = true, optional = true }
+async-std = { workspace = true, optional = true }
+smol = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+
+# Macro infrastructure
+proc-macro2 = { version = "1.0.36", default-features = false }
+syn = { version = "2.0.52", default-features = false, features = [
+    "parsing",
+    "proc-macro",
+] }
+quote = { version = "1.0.26", default-features = false }
+
+# Utilities
+cfg-if = { workspace = true }
+
+[lints]
+workspace = true

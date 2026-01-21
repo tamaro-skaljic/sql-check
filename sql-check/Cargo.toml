@@ -1,0 +1,43 @@
+[package]
+name = "sql-check"
+description = "Compile-time SQL validation crate extracted from SQLx"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "../README.md"
+
+[features]
+default = ["check"]
+
+# Enable compile-time SQL validation
+check = ["sql-check_derive"]
+
+# for conditional compilation
+_rt-async-global-executor = ["sql-check_derive?/_rt-async-global-executor"]
+_rt-async-std = ["sql-check_derive?/_rt-async-std"]
+_rt-smol = ["sql-check_derive?/_rt-smol"]
+_rt-tokio = ["sql-check_derive?/_rt-tokio"]
+
+_tls-native-tls = ["sql-check_derive?/_tls-native-tls"]
+_tls-rustls-aws-lc-rs = ["sql-check_derive?/_tls-rustls-aws-lc-rs"]
+_tls-rustls-ring-webpki = ["sql-check_derive?/_tls-rustls-ring-webpki"]
+_tls-rustls-ring-native-roots = [
+    "sql-check_derive?/_tls-rustls-ring-native-roots",
+]
+
+# database
+mysql = ["sql-check_derive?/mysql"]
+postgres = ["sql-check_derive?/postgres"]
+sqlite = ["sql-check_derive?/sqlite"]
+
+[dependencies]
+sql-check_derive = { version = "=0.9.0-alpha.1", path = "../sql-check_derive", optional = true }
+
+[dev-dependencies]
+trybuild = "1.0"
+
+[lints]
+workspace = true

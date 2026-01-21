@@ -1,0 +1,53 @@
+[workspace]
+members = ["sql-check", "sql-check_derive"]
+resolver = "2"
+
+[workspace.package]
+version = "0.9.0-alpha.1"
+license = "MIT OR Apache-2.0"
+edition = "2021"
+repository = "https://github.com/tamaro-skaljic/sql-check"
+keywords = ["database", "sql", "compile-time", "validation"]
+categories = ["database", "development-tools"]
+authors = [
+    # SQLx Authors
+    "Ryan Leckey <leckey.ryan@gmail.com>",
+    "Austin Bonander <austin.bonander@gmail.com>",
+    "Chloe Ross <orangesnowfox@gmail.com>",
+    "Daniel Akhterov <akhterovd@gmail.com>",
+    # SQL Check Author
+    "Tamaro Skaljic <mail@tamaro-skaljic.de>",
+]
+rust-version = "1.86.0"
+
+[workspace.dependencies]
+# SQLx crates (from crates.io)
+sqlx-core = { version = "0.9.0-alpha.1", default-features = false }
+sqlx-mysql = { version = "0.9.0-alpha.1", default-features = false }
+sqlx-postgres = { version = "0.9.0-alpha.1", default-features = false }
+sqlx-sqlite = { version = "0.9.0-alpha.1", default-features = false, features = [
+    "bundled",
+] }
+
+# Async runtimes
+async-global-executor = { version = "3.1", default-features = false, features = [
+    "async-io",
+] }
+async-std = { version = "1.13" }
+smol = { version = "2.0", default-features = false }
+tokio = { version = "1", default-features = false, features = [
+    "time",
+    "net",
+    "sync",
+    "fs",
+    "io-util",
+    "rt",
+] }
+
+# Utilities
+cfg-if = "1.0.0"
+
+[workspace.lints.clippy]
+cast_possible_truncation = 'deny'
+cast_possible_wrap = 'deny'
+cast_sign_loss = 'deny'

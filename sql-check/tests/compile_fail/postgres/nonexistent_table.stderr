@@ -1,0 +1,5 @@
+error: SQL validation failed: $ERROR
+ --> tests/compile_fail/postgres/nonexistent_table.rs:4:16
+  |
+4 |     let _sql = check!("SELECT * FROM this_table_does_not_exist_anywhere");
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,162 @@
+name: Test sql-check
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]  # Also run tests when version tags are pushed
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - run: rustup component add rustfmt
+
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - run: rustup component add clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy with all database features
+        run: >
+          cargo clippy
+          --all-targets
+          --features postgres,mysql,sqlite,_rt-tokio,_tls-native-tls
+          -- -D warnings
+
+  test-sqlite:
+    name: SQLite (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [ async-global-executor, async-std, smol, tokio ]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: sqlite-${{ matrix.runtime }}
+
+      - name: Build with SQLite
+        run: >
+          cargo build
+          --features sqlite,_rt-${{ matrix.runtime }},_tls-native-tls
+
+      - name: Test with SQLite
+        run: >
+          cargo test
+          --features sqlite,_rt-${{ matrix.runtime }},_tls-native-tls
+        env:
+          DATABASE_URL: "sqlite::memory:"
+
+  test-postgres:
+    name: PostgreSQL (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [ async-global-executor, async-std, smol, tokio ]
+    services:
+      postgres:
+        image: postgres:17
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sqlcheck
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: postgres-${{ matrix.runtime }}
+
+      - name: Build with PostgreSQL
+        run: >
+          cargo build
+          --features postgres,_rt-${{ matrix.runtime }},_tls-native-tls
+
+      - name: Test with PostgreSQL
+        run: >
+          cargo test
+          --features postgres,_rt-${{ matrix.runtime }},_tls-native-tls
+        env:
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/sqlcheck"
+
+  test-mysql:
+    name: MySQL (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [ async-global-executor, async-std, smol, tokio ]
+    services:
+      mysql:
+        image: mysql:8
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: sqlcheck
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: mysql-${{ matrix.runtime }}
+
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          sleep 30
+
+      - name: Build with MySQL
+        run: >
+          cargo build
+          --features mysql,_rt-${{ matrix.runtime }},_tls-native-tls
+
+      - name: Test with MySQL
+        run: >
+          cargo test
+          --features mysql,_rt-${{ matrix.runtime }},_tls-native-tls
+        env:
+          DATABASE_URL: "mysql://root:password@localhost:3306/sqlcheck"
