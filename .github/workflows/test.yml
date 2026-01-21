@@ -42,6 +42,8 @@ jobs:
           --lib --bins --tests
           --features postgres,mysql,sqlite,_rt-tokio,_tls-native-tls
           -- -D warnings
+        env:
+          DATABASE_URL: "sqlite::memory:"
 
   test-sqlite:
     name: SQLite (${{ matrix.runtime }})
