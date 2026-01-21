@@ -1,5 +1,7 @@
-error: SQL validation failed: $ERROR
+error: SQL validation failed: error returned from database: 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELEC * FROM' at line 1
  --> tests/compile_fail/mysql/invalid_sql_syntax.rs:4:16
   |
 4 |     let _sql = check!("SELEC * FROM");
   |                ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `$crate::check_impl` which comes from the expansion of the macro `check` (in Nightly builds, run with -Z macro-backtrace for more info)
