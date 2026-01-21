@@ -62,8 +62,26 @@ macro_rules! check {
 
 /// Validates SQL at compile time and expands to the SQL string literal.
 ///
-/// When the `check` feature is disabled, this is a no-op that just
-/// returns the SQL string literal.
+/// When the `check` feature is enabled (default), this macro:
+/// 1. Connects to the database specified by `DATABASE_URL` environment variable
+/// 2. Sends a prepare command to validate the SQL syntax and semantics
+/// 3. If validation succeeds, expands to the SQL string literal
+/// 4. If validation fails, produces a compilation error
+///
+/// When the `check` feature is disabled, this macro simply expands to the
+/// SQL string literal without any validation (useful for production builds).
+///
+/// # Examples
+///
+/// ```ignore
+/// use sql_check::check;
+///
+/// // Valid SQL - compiles successfully
+/// let sql = check!("SELECT 1");
+///
+/// // Invalid SQL - fails at compile time (when check feature is enabled)
+/// // let sql = check!("SELECT invalid_column FROM nonexistent_table");
+/// ```
 #[cfg(not(feature = "check"))]
 #[macro_export]
 macro_rules! check {
