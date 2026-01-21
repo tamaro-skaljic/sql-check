@@ -22,10 +22,14 @@ fn main() {
     let select_query = check!("SELECT 1");
     println!("✓ Valid SELECT query: {}", select_query);
 
-    let select_with_column = check!("SELECT current_timestamp");
-    println!("✓ Valid SELECT with function: {}", select_with_column);
+    let select_with_function = check!("SELECT current_timestamp");
+    println!("✓ Valid SELECT with function: {}", select_with_function);
 
-    // More complex queries
+    // PostgreSQL-specific syntax validation
+    let select_with_coalesce = check!("SELECT COALESCE(NULL, 'default')");
+    println!("✓ Valid SELECT with COALESCE: {}", select_with_coalesce);
+
+    // CREATE TABLE syntax validation
     let create_table = check!(
         "CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -34,8 +38,9 @@ fn main() {
             created_at TIMESTAMPTZ DEFAULT NOW()
         )"
     );
-    println!("✓ Valid CREATE TABLE query validated");
+    println!("✓ Valid CREATE TABLE query: {}", create_table);
 
+    // DML queries (requires 'users' table to exist in the database at compile time, see .github/workflows/test.yml for setup)
     let insert_query = check!("INSERT INTO users (name, email) VALUES ($1, $2)");
     println!("✓ Valid INSERT query: {}", insert_query);
 

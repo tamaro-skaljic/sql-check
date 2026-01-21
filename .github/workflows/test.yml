@@ -36,12 +36,23 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Create SQLite database with schema
+        run: |
+          sqlite3 /tmp/test.db "CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );"
+
       - name: Run clippy with all database features
         run: >
           cargo clippy
           --all-targets
           --features postgres,mysql,sqlite,_rt-tokio,_tls-native-tls
           -- -D warnings
+        env:
+          DATABASE_URL: "sqlite:///tmp/test.db"
 
   test-sqlite:
     name: SQLite (${{ matrix.runtime }})
@@ -50,6 +61,8 @@ jobs:
       matrix:
         runtime: [ async-global-executor, async-std, smol, tokio ]
     timeout-minutes: 20
+    env:
+      DATABASE_URL: "sqlite:///tmp/test.db"
     steps:
       - uses: actions/checkout@v4
 
@@ -60,6 +73,15 @@ jobs:
         with:
           key: sqlite-${{ matrix.runtime }}
 
+      - name: Create SQLite database with schema
+        run: |
+          sqlite3 /tmp/test.db "CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );"
+
       - name: Build with SQLite
         run: >
           cargo build
@@ -69,8 +91,6 @@ jobs:
         run: >
           cargo test
           --features sqlite,_rt-${{ matrix.runtime }},_tls-native-tls
-        env:
-          DATABASE_URL: "sqlite::memory:"
 
   test-postgres:
     name: PostgreSQL (${{ matrix.runtime }})
@@ -92,6 +112,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     timeout-minutes: 20
+    env:
+      DATABASE_URL: "postgres://postgres:password@localhost:5432/sqlcheck"
     steps:
       - uses: actions/checkout@v4
 
@@ -102,6 +124,15 @@ jobs:
         with:
           key: postgres-${{ matrix.runtime }}
 
+      - name: Create PostgreSQL schema
+        run: |
+          psql $DATABASE_URL -c "CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          );"
+
       - name: Build with PostgreSQL
         run: >
           cargo build
@@ -111,8 +142,6 @@ jobs:
         run: >
           cargo test
           --features postgres,_rt-${{ matrix.runtime }},_tls-native-tls
-        env:
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/sqlcheck"
 
   test-mysql:
     name: MySQL (${{ matrix.runtime }})
@@ -134,6 +163,8 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     timeout-minutes: 20
+    env:
+      DATABASE_URL: "mysql://root:password@localhost:3306/sqlcheck"
     steps:
       - uses: actions/checkout@v4
 
@@ -149,6 +180,15 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 30
 
+      - name: Create MySQL schema
+        run: |
+          mysql -h 127.0.0.1 -u root -ppassword sqlcheck -e "CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );"
+
       - name: Build with MySQL
         run: >
           cargo build
@@ -158,5 +198,3 @@ jobs:
         run: >
           cargo test
           --features mysql,_rt-${{ matrix.runtime }},_tls-native-tls
-        env:
-          DATABASE_URL: "mysql://root:password@localhost:3306/sqlcheck"

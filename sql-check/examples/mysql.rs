@@ -22,10 +22,14 @@ fn main() {
     let select_query = check!("SELECT 1");
     println!("✓ Valid SELECT query: {}", select_query);
 
-    let select_with_column = check!("SELECT NOW()");
-    println!("✓ Valid SELECT with function: {}", select_with_column);
+    let select_with_function = check!("SELECT NOW()");
+    println!("✓ Valid SELECT with function: {}", select_with_function);
 
-    // More complex queries
+    // MySQL-specific syntax validation
+    let select_with_ifnull = check!("SELECT IFNULL(NULL, 'default')");
+    println!("✓ Valid SELECT with IFNULL: {}", select_with_ifnull);
+
+    // CREATE TABLE syntax validation
     let create_table = check!(
         "CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,8 +38,9 @@ fn main() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )"
     );
-    println!("✓ Valid CREATE TABLE query validated");
+    println!("✓ Valid CREATE TABLE query: {}", create_table);
 
+    // DML queries (requires 'users' table to exist in the database at compile time, see .github/workflows/test.yml for setup)
     let insert_query = check!("INSERT INTO users (name, email) VALUES (?, ?)");
     println!("✓ Valid INSERT query: {}", insert_query);
 

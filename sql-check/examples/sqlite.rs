@@ -4,12 +4,11 @@
 //! at compile time before using them with your database library.
 //!
 //! Prerequisites:
-//! - SQLite database file
-//! - DATABASE_URL environment variable set
+//! - DATABASE_URL environment variable set to a SQLite database
 //!
 //! Run with:
 //! ```bash
-//! DATABASE_URL="sqlite://test.db" cargo run --example sqlite --features sqlite,_rt-tokio,_tls-rustls-ring-webpki
+//! DATABASE_URL="sqlite::memory:" cargo run --example sqlite --features sqlite,_rt-tokio,_tls-rustls-ring-webpki
 //! ```
 
 use sql_check::check;
@@ -22,10 +21,14 @@ fn main() {
     let select_query = check!("SELECT 1");
     println!("✓ Valid SELECT query: {}", select_query);
 
-    let select_with_column = check!("SELECT datetime('now')");
-    println!("✓ Valid SELECT with function: {}", select_with_column);
+    let select_with_function = check!("SELECT datetime('now')");
+    println!("✓ Valid SELECT with function: {}", select_with_function);
 
-    // More complex queries
+    // SQLite-specific syntax validation
+    let select_with_coalesce = check!("SELECT COALESCE(NULL, 'default')");
+    println!("✓ Valid SELECT with COALESCE: {}", select_with_coalesce);
+
+    // CREATE TABLE syntax validation
     let create_table = check!(
         "CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,8 +37,9 @@ fn main() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )"
     );
-    println!("✓ Valid CREATE TABLE query validated");
+    println!("✓ Valid CREATE TABLE query: {}", create_table);
 
+    // DML queries (requires 'users' table to exist in the database at compile time, see .github/workflows/test.yml for setup)
     let insert_query = check!("INSERT INTO users (name, email) VALUES (?, ?)");
     println!("✓ Valid INSERT query: {}", insert_query);
 
