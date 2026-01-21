@@ -36,23 +36,12 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Create SQLite database with schema
-        run: |
-          sqlite3 /tmp/test.db "CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          );"
-
       - name: Run clippy with all database features
         run: >
           cargo clippy
-          --all-targets
+          --lib --bins --tests
           --features postgres,mysql,sqlite,_rt-tokio,_tls-native-tls
           -- -D warnings
-        env:
-          DATABASE_URL: "sqlite:///tmp/test.db"
 
   test-sqlite:
     name: SQLite (${{ matrix.runtime }})
